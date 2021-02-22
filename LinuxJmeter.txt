@@ -1,0 +1,138 @@
+mv JmeterLinux.zip /usr/local/
+cd /usr/local/
+unzip JmeterLinux.zip
+tar -zxvf apache-jmeter-3.3.tgz
+tar -zxvf jdk-8u212-linux-x64.tar.gz
+mv ocrda.txt apache-jmeter-3.3/bin/
+
+配置java/hostname
+vim /etc/profile
+
+export JAVA_HOME=/usr/local/jdk1.8.0_212
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export  PATH=${JAVA_HOME}/bin:$PATH
+
+export JMETER_HOME=/usr/local/apache-jmeter-3.3
+export CLASSPATH=$JMETER_HOME/lib/ext/ApacheJMeter_core.jar:$JMETER_HOME/lib/jorphan.jar:$CLASSPATH
+export PATH=$JMETER_HOME/bin:$PATH
+
+
+
+hostname
+localhost.localdomain
+vi /etc/hosts
+XXX.XXX.XXX.XXX {hostname}
+
+查看java安装
+source /etc/profile
+java -version
+jmeter -v
+
+配置Jmeter
+master
+jmeter.properties
+mode=Standard
+remote_hosts=1.1.1.1:1099,1.1.1.1:1099
+server_port=1099
+server.rmi.localport=1099
+
+slave
+cd apache-jmeter-3.3/bin/
+编辑
+vim jmeter
+HEAP="-Xms2560m -Xmx2560m"
+
+vim jmeter.properties
+mode=Standard
+server_port=1099
+server.rmi.localport=1099
+
+vim jmeter-server
+hostname设为机器的IP
+
+vi /usr/local/apache-jmeter-3.3/bin/user.properties
+jmeter.save.saveservice.output_format=xml
+jmeter.save.saveservice.response_data=true
+jmeter.save.saveservice.samplerData=true
+jmeter.save.saveservice.requestHeaders=true
+jmeter.save.saveservice.url=true
+jmeter.save.saveservice.responseHeaders=true
+
+Windows启动
+ps -ef | grep jmeter
+kill -9 
+
+cd /usr/local/apache-jmeter-3.3/bin/
+source /etc/profile
+nohup  ./jmeter-server  2>&1&
+ps -ef | grep jmeter
+clear
+tail -f /usr/local/apache-jmeter-3.3/bin/jmeter-server.log
+
+
+Linux启动
+ps -ef | grep jmeter
+kill -9 
+
+cd /usr/local/apache-jmeter-3.3/bin/
+source /etc/profile
+nohup  ./jmeter-server  2>&1&
+cd /home/paas/
+jmeter -n -t /home/paas/QC_Mulite.jmx -l log.jtl
+
+
+jmeter -n -t /root/test.jmx -l log.jtl
+
+curl -k --request POST --url https://1.1.1.1:8542/api/v1/te/detect
+
+
+
+OTHER
+XLL报错
+vim ~/.bashrc
+export DISPLAY=:0.0
+source ~/.bashrc
+
+export RMI_HOST_DEF=-Djava.rmi.server.hostname=1.1.1.1
+./jmeter-server
+./jmeter-server -Djava.rmi.server.hostname=
+
+.\OCR测试数据\ocrda.txt
+/home/paas/ocrda.txt
+
+
+chmod +x jmeter-server
+
+
+
+https://blog.csdn.net/u011498011/article/details/106823026/
+https://blog.csdn.net/u011320832/article/details/88060106?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3.channel_param
+https://www.cnblogs.com/testing-life/p/11534120.html
+
+
+
+BeanShell
+获取当前时间
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+Date startdate = new Date();
+SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+String startstr = df.format(startdate);
+
+
+函数
+log.info("${__time(yyyy-MM-dd HH:mm:ss:SSS,time)}");
+log.info("${__time(,)}");
+
+
+BeanShell PreProcesser
+//log.info("${__time(yyyy-MM-dd HH:mm:ss:SSS,time)}");
+log.info("序号："+"${__threadNum}"+"  时间戳："+"${__time(,)}");
+String time = "${__time(,)}";
+//vars.get("startTime")
+//log.info("${startTime}");
+//log.info(time);
+//vars.put(${startTime},time);
+//log.info("${startTime}");
